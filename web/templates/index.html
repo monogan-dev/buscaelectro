@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>BuscaElectro — Compara precios en Colombia</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --azul:      #2563eb;
+      --azul-dark: #1d4ed8;
+      --azul-soft: #eff6ff;
+      --verde:     #059669;
+      --verde-bg:  #ecfdf5;
+      --rojo:      #dc2626;
+      --rojo-bg:   #fef2f2;
+      --naranja:   #ea580c;
+      --gris-50:   #f9fafb;
+      --gris-100:  #f3f4f6;
+      --gris-200:  #e5e7eb;
+      --gris-400:  #9ca3af;
+      --gris-600:  #4b5563;
+      --gris-900:  #111827;
+      --radio:     12px;
+      --sombra:    0 1px 3px rgba(0,0,0,.08), 0 1px 2px rgba(0,0,0,.06);
+      --sombra-md: 0 4px 12px rgba(0,0,0,.1);
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--gris-50);
+      color: var(--gris-900);
+      min-height: 100vh;
+    }
+
+    /* ══ HEADER ══ */
+    header {
+      background: white;
+      border-bottom: 1px solid var(--gris-200);
+      position: sticky;
+      top: 0;
+      z-index: 200;
+      box-shadow: var(--sombra);
+    }
+
+    .header-inner {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 0 1.5rem;
+      height: 64px;
+      display: flex;
+      align-items: center;
+      gap: 1.5rem;
+    }
+
+    .logo {
+      font-size: 1.25rem;
+      font-weight: 800;
+      color: var(--azul);
+      letter-spacing: -0.5px;
+      white-space: nowrap;
+      text-decoration: none;
+    }
+
+    .logo span { color: var(--gris-900); }
+
+    /* barra de búsqueda en header */
+    .header-search {
+      flex: 1;
+      max-width: 600px;
+      display: flex;
+      background: var(--gris-100);
+      border: 1.5px solid var(--gris-200);
+      border-radius: 999px;
+      overflow: hidden;
+      transition: border-color .15s, box-shadow .15s;
+    }
+
+    .header-search:focus-within {
+      border-color: var(--azul);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37,99,235,.12);
+    }
+
+    .header-search input {
+      flex: 1;
+      padding: .55rem 1rem;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: .95rem;
+      font-family: inherit;
+      color: var(--gris-900);
+    }
+
+    .header-search input::placeholder { color: var(--gris-400); }
+
+    .header-search button {
+      background: var(--azul);
+      color: white;
+      border: none;
+      padding: 0 1.1rem;
+      cursor: pointer;
+      font-size: 1rem;
+      transition: background .15s;
+      border-radius: 0 999px 999px 0;
+    }
+
+    .header-search button:hover { background: var(--azul-dark); }
+
+    .header-right {
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      margin-left: auto;
+    }
+
+    .badge-tiendas {
+      background: var(--azul-soft);
+      color: var(--azul);
+      font-size: .75rem;
+      font-weight: 600;
+      padding: .3rem .7rem;
+      border-radius: 999px;
+      white-space: nowrap;
+    }
+
+    /* ══ HERO (solo pantalla de inicio) ══ */
+    #hero {
+      background: linear-gradient(135deg, #1e3a8a 0%, #2563eb 50%, #0ea5e9 100%);
+      color: white;
+      padding: 3.5rem 1.5rem 4rem;
+      text-align: center;
+    }
+
+    .hero-titulo {
+      font-size: clamp(1.75rem, 4vw, 2.75rem);
+      font-weight: 800;
+      letter-spacing: -1px;
+      margin-bottom: .75rem;
+    }
+
+    .hero-sub {
+      font-size: 1.05rem;
+      opacity: .85;
+      margin-bottom: 2rem;
+    }
+
+    .hero-search-wrap {
+      max-width: 620px;
+      margin: 0 auto 1.5rem;
+      display: flex;
+      background: white;
+      border-radius: 999px;
+      overflow: hidden;
+      box-shadow: 0 8px 30px rgba(0,0,0,.2);
+    }
+
+    .hero-search-wrap input {
+      flex: 1;
+      padding: .85rem 1.4rem;
+      border: none;
+      outline: none;
+      font-size: 1rem;
+      font-family: inherit;
+      color: var(--gris-900);
+    }
+
+    .hero-search-wrap button {
+      background: var(--azul);
+      color: white;
+      border: none;
+      padding: 0 1.5rem;
+      font-size: 1rem;
+      font-weight: 600;
+      cursor: pointer;
+      border-radius: 0 999px 999px 0;
+      transition: background .15s;
+    }
+
+    .hero-search-wrap button:hover { background: var(--azul-dark); }
+
+    .hero-chips {
+      display: flex;
+      gap: .5rem;
+      justify-content: center;
+      flex-wrap: wrap;
+    }
+
+    .hero-chip {
+      background: rgba(255,255,255,.15);
+      color: white;
+      border: 1px solid rgba(255,255,255,.3);
+      border-radius: 999px;
+      padding: .3rem .85rem;
+      font-size: .82rem;
+      cursor: pointer;
+      transition: background .15s;
+    }
+
+    .hero-chip:hover { background: rgba(255,255,255,.28); }
+
+    /* ══ LAYOUT PRINCIPAL ══ */
+    .page-wrap {
+      max-width: 1280px;
+      margin: 0 auto;
+      padding: 1.5rem;
+      display: flex;
+      gap: 1.5rem;
+      align-items: flex-start;
+    }
+
+    /* ══ SIDEBAR FILTROS ══ */
+    #sidebar {
+      width: 240px;
+      flex-shrink: 0;
+      display: none; /* oculto hasta que hay resultados */
+    }
+
+    #sidebar.visible { display: block; }
+
+    .filter-card {
+      background: white;
+      border: 1px solid var(--gris-200);
+      border-radius: var(--radio);
+      padding: 1.1rem;
+      margin-bottom: 1rem;
+      box-shadow: var(--sombra);
+    }
+
+    .filter-title {
+      font-size: .8rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .05em;
+      color: var(--gris-600);
+      margin-bottom: .8rem;
+    }
+
+    .filter-option {
+      display: flex;
+      align-items: center;
+      gap: .55rem;
+      padding: .35rem 0;
+      cursor: pointer;
+      font-size: .88rem;
+      color: var(--gris-900);
+      user-select: none;
+    }
+
+    .filter-option input[type=checkbox] {
+      accent-color: var(--azul);
+      width: 15px;
+      height: 15px;
+      cursor: pointer;
+    }
+
+    .filter-count {
+      margin-left: auto;
+      font-size: .75rem;
+      color: var(--gris-400);
+      background: var(--gris-100);
+      padding: .1rem .4rem;
+      border-radius: 999px;
+    }
+
+    .precio-range {
+      display: flex;
+      flex-direction: column;
+      gap: .5rem;
+    }
+
+    .precio-inputs {
+      display: flex;
+      gap: .4rem;
+    }
+
+    .precio-inputs input {
+      flex: 1;
+      padding: .4rem .55rem;
+      border: 1.5px solid var(--gris-200);
+      border-radius: 7px;
+      font-size: .82rem;
+      font-family: inherit;
+      outline: none;
+      transition: border-color .15s;
+    }
+
+    .precio-inputs input:focus { border-color: var(--azul); }
+
+    .btn-aplicar {
+      width: 100%;
+      padding: .45rem;
+      background: var(--azul);
+      color: white;
+      border: none;
+      border-radius: 7px;
+      font-size: .84rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background .15s;
+      font-family: inherit;
+    }
+
+    .btn-aplicar:hover { background: var(--azul-dark); }
+
+    /* ══ CONTENIDO ══ */
+    #contenido { flex: 1; min-width: 0; }
+
+    /* ══ SECCIÓN DESTACADOS ══ */
+    .seccion-titulo {
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .5rem;
+    }
+
+    .seccion-titulo .icono { font-size: 1.2rem; }
+
+    /* ══ BARRA DE RESULTADOS ══ */
+    .resultados-bar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 1rem;
+      flex-wrap: wrap;
+      gap: .5rem;
+    }
+
+    .resultados-info { font-size: .9rem; color: var(--gris-600); }
+    .resultados-info strong { color: var(--gris-900); font-weight: 700; }
+
+    .orden-select {
+      padding: .4rem .7rem;
+      border: 1.5px solid var(--gris-200);
+      border-radius: 8px;
+      font-size: .84rem;
+      font-family: inherit;
+      cursor: pointer;
+      background: white;
+      outline: none;
+    }
+
+    /* ══ BANNER IA ══ */
+    .ia-banner {
+      background: linear-gradient(135deg, #ede9fe, #dbeafe);
+      border: 1px solid #c4b5fd;
+      border-radius: var(--radio);
+      padding: .85rem 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      gap: .75rem;
+      align-items: center;
+    }
+
+    .ia-banner .ia-icon { font-size: 1.3rem; }
+    .ia-banner .ia-label { font-size: .7rem; font-weight: 700; color: #7c3aed; text-transform: uppercase; letter-spacing: .05em; }
+    .ia-banner .ia-text { font-size: .88rem; color: var(--gris-900); }
+    .ia-banner .ia-tag { display: inline-block; background: #ede9fe; color: #7c3aed; font-size: .75rem; font-weight: 600; padding: .15rem .5rem; border-radius: 999px; margin-top: .2rem; }
+
+    /* ══ BANNER COMPARACIÓN ══ */
+    .comparacion-banner {
+      background: var(--azul-soft);
+      border: 1px solid #bfdbfe;
+      border-radius: var(--radio);
+      padding: .85rem 1.1rem;
+      margin-bottom: 1rem;
+      display: flex;
+      align-items: center;
+      gap: .75rem;
+      font-size: .88rem;
+      color: var(--azul-dark);
+    }
+
+    .comparacion-banner strong { font-weight: 700; }
+
+    /* ══ GRID ══ */
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+      gap: 1rem;
+    }
+
+    /* ══ CARD ══ */
+    .card {
+      background: white;
+      border: 1px solid var(--gris-200);
+      border-radius: var(--radio);
+      overflow: hidden;
+      display: flex;
+      flex-direction: column;
+      box-shadow: var(--sombra);
+      transition: box-shadow .2s, transform .2s;
+      cursor: pointer;
+      position: relative;
+    }
+
+    .card:hover {
+      box-shadow: var(--sombra-md);
+      transform: translateY(-3px);
+    }
+
+    /* badge descuento sobre imagen */
+    .card-badge-desc {
+      position: absolute;
+      top: .6rem;
+      left: .6rem;
+      background: var(--rojo);
+      color: white;
+      font-size: .72rem;
+      font-weight: 700;
+      padding: .2rem .5rem;
+      border-radius: 6px;
+      z-index: 2;
+    }
+
+    /* badge multi-tienda */
+    .card-badge-multi {
+      position: absolute;
+      top: .6rem;
+      right: .6rem;
+      background: var(--azul);
+      color: white;
+      font-size: .68rem;
+      font-weight: 700;
+      padding: .2rem .5rem;
+      border-radius: 6px;
+      z-index: 2;
+    }
+
+    .card-img {
+      height: 170px;
+      background: var(--gris-50);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      overflow: hidden;
+      border-bottom: 1px solid var(--gris-100);
+    }
+
+    .card-img img {
+      max-height: 150px;
+      max-width: 100%;
+      object-fit: contain;
+      transition: transform .3s;
+    }
+
+    .card:hover .card-img img { transform: scale(1.05); }
+
+    .card-img .no-img { font-size: 2.5rem; opacity: .15; }
+
+    .card-body {
+      padding: .85rem;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      gap: .6rem;
+    }
+
+    .card-nombre {
+      font-size: .83rem;
+      font-weight: 600;
+      line-height: 1.4;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+      color: var(--gris-900);
+    }
+
+    .card-precio-principal {
+      display: flex;
+      align-items: baseline;
+      gap: .4rem;
+      flex-wrap: wrap;
+    }
+
+    .precio-actual {
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--verde);
+    }
+
+    .precio-tachado {
+      font-size: .8rem;
+      color: var(--gris-400);
+      text-decoration: line-through;
+    }
+
+    .card-tiendas {
+      display: flex;
+      flex-direction: column;
+      gap: .3rem;
+      border-top: 1px solid var(--gris-100);
+      padding-top: .6rem;
+    }
+
+    .tienda-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .8rem;
+      text-decoration: none;
+      color: inherit;
+      padding: .3rem .4rem;
+      border-radius: 7px;
+      margin: 0 -.4rem;
+      transition: background .12s;
+    }
+
+    a.tienda-row:hover {
+      background: var(--gris-100);
+    }
+
+    a.tienda-row.mejor:hover {
+      background: var(--verde-bg);
+    }
+
+    .tienda-row.mejor .tienda-precio { color: var(--verde); font-weight: 700; }
+
+    .tienda-chip {
+      background: var(--gris-100);
+      color: var(--gris-600);
+      font-size: .7rem;
+      font-weight: 600;
+      padding: .15rem .45rem;
+      border-radius: 5px;
+      display: flex;
+      align-items: center;
+      gap: .25rem;
+    }
+
+    .tienda-row.mejor .tienda-chip {
+      background: var(--verde-bg);
+      color: var(--verde);
+    }
+
+    .tienda-chip .ir-icon {
+      font-size: .65rem;
+      opacity: 0;
+      transition: opacity .12s;
+    }
+
+    a.tienda-row:hover .ir-icon { opacity: 1; }
+
+    .tienda-precio {
+      font-size: .85rem;
+      font-weight: 600;
+      display: flex;
+      align-items: center;
+      gap: .3rem;
+    }
+
+    .tienda-precio .desc-mini {
+      font-size: .68rem;
+      font-weight: 700;
+      color: var(--rojo);
+      background: var(--rojo-bg);
+      padding: .08rem .3rem;
+      border-radius: 4px;
+    }
+
+    .card-footer {
+      padding: .7rem .85rem;
+      border-top: 1px solid var(--gris-100);
+      display: flex;
+      gap: .4rem;
+    }
+
+    .btn-ir {
+      flex: 1;
+      text-align: center;
+      background: var(--azul);
+      color: white;
+      text-decoration: none;
+      padding: .45rem .5rem;
+      border-radius: 8px;
+      font-size: .78rem;
+      font-weight: 600;
+      transition: background .15s;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .btn-ir:hover { background: var(--azul-dark); }
+
+    .btn-ir.alt {
+      background: white;
+      color: var(--azul);
+      border: 1.5px solid var(--azul);
+    }
+
+    .btn-ir.alt:hover { background: var(--azul-soft); }
+
+    /* ══ ESTADO CARGANDO / VACÍO ══ */
+    .estado {
+      text-align: center;
+      padding: 3.5rem 1rem;
+      color: var(--gris-400);
+    }
+
+    .estado-icon { font-size: 3rem; margin-bottom: .75rem; }
+    .estado h2 { font-size: 1.15rem; color: var(--gris-600); margin-bottom: .4rem; }
+    .estado p { font-size: .9rem; }
+
+    .spinner {
+      width: 36px; height: 36px;
+      border: 3px solid var(--gris-200);
+      border-top-color: var(--azul);
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin: 0 auto 1rem;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* ══ CATEGORÍAS INICIO ══ */
+    .cats-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+      gap: .75rem;
+      margin-bottom: 2rem;
+    }
+
+    .cat-btn {
+      background: white;
+      border: 1.5px solid var(--gris-200);
+      border-radius: var(--radio);
+      padding: 1rem .75rem;
+      text-align: center;
+      cursor: pointer;
+      transition: all .15s;
+      font-family: inherit;
+    }
+
+    .cat-btn:hover {
+      border-color: var(--azul);
+      background: var(--azul-soft);
+      transform: translateY(-2px);
+      box-shadow: var(--sombra);
+    }
+
+    .cat-btn .cat-icon { font-size: 1.6rem; margin-bottom: .35rem; }
+    .cat-btn .cat-name { font-size: .8rem; font-weight: 600; color: var(--gris-900); }
+    .cat-btn .cat-count { font-size: .72rem; color: var(--gris-400); margin-top: .1rem; }
+
+    /* ══ RESPONSIVE ══ */
+    @media (max-width: 768px) {
+      #sidebar { display: none !important; }
+      .grid { grid-template-columns: repeat(2, 1fr); }
+      .header-search { display: none; }
+      #hero { padding: 2rem 1rem 2.5rem; }
+    }
+
+    @media (max-width: 420px) {
+      .grid { grid-template-columns: 1fr; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ══ HEADER ══ -->
+<header>
+  <div class="header-inner">
+    <a class="logo" href="/" onclick="volverInicio(event)">Busca<span>Electro</span></a>
+    <div class="header-search" id="header-search" style="display:none">
+      <input type="text" id="input-header" placeholder="Buscar electrodomésticos..." autocomplete="off">
+      <button onclick="buscarDesdeHeader()">&#128269;</button>
+    </div>
+    <div class="header-right">
+      <span class="badge-tiendas" id="badge-tiendas">Cargando...</span>
+    </div>
+  </div>
+</header>
+
+<!-- ══ HERO ══ -->
+<div id="hero">
+  <h1 class="hero-titulo">Compara precios en 9 tiendas<br>de Colombia al instante</h1>
+  <p class="hero-sub">Encuentra el electrodoméstico más barato entre Alkosto, Éxito, Homecenter y más</p>
+  <div class="hero-search-wrap">
+    <input type="text" id="input-hero" placeholder="Ej: nevera samsung no frost, lavadora LG 15 kg..." autocomplete="off">
+    <button onclick="buscarDesdeHero()">Buscar</button>
+  </div>
+  <div class="hero-chips">
+    <span class="hero-chip" onclick="buscarChip('nevera no frost')">Nevera No Frost</span>
+    <span class="hero-chip" onclick="buscarChip('lavadora frontal')">Lavadora frontal</span>
+    <span class="hero-chip" onclick="buscarChip('televisor 55')">TV 55"</span>
+    <span class="hero-chip" onclick="buscarChip('aire acondicionado')">Aire acondicionado</span>
+    <span class="hero-chip" onclick="buscarChip('microondas samsung')">Microondas</span>
+    <span class="hero-chip" onclick="buscarChip('estufa gas')">Estufa gas</span>
+  </div>
+</div>
+
+<!-- ══ LAYOUT ══ -->
+<div class="page-wrap">
+
+  <!-- Sidebar filtros -->
+  <aside id="sidebar">
+    <div class="filter-card">
+      <div class="filter-title">Tienda</div>
+      <div id="filtro-tiendas"></div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-title">Precio</div>
+      <div class="precio-range">
+        <div class="precio-inputs">
+          <input type="number" id="precio-min" placeholder="Mín $" min="0">
+          <input type="number" id="precio-max" placeholder="Máx $" min="0">
+        </div>
+        <button class="btn-aplicar" onclick="aplicarFiltros()">Aplicar</button>
+      </div>
+    </div>
+    <div class="filter-card">
+      <div class="filter-title">Descuento</div>
+      <label class="filter-option">
+        <input type="checkbox" id="filtro-desc" onchange="aplicarFiltros()">
+        Solo con descuento
+      </label>
+    </div>
+  </aside>
+
+  <!-- Contenido principal -->
+  <main id="contenido">
+    <!-- Se llena con JS -->
+  </main>
+
+</div>
+
+<script>
+// ── Estado global ──────────────────────────────────────────────────────────
+let estadoActual = 'inicio'; // 'inicio' | 'resultados'
+let ultimaBusqueda = '';
+let todosLosProductos = [];
+let tiendasDisponibles = new Set();
+
+// ── Inicializar ────────────────────────────────────────────────────────────
+fetch('/api/stats').then(r => r.json()).then(d => {
+  document.getElementById('badge-tiendas').textContent =
+    `${d.total_productos.toLocaleString('es-CO')} productos · ${Object.keys(d.por_tienda).length} tiendas`;
+});
+
+// Cargar pantalla de inicio
+cargarInicio();
+
+// Enter en inputs
+['input-hero','input-header'].forEach(id => {
+  const el = document.getElementById(id);
+  if (el) el.addEventListener('keydown', e => { if (e.key === 'Enter') { id === 'input-hero' ? buscarDesdeHero() : buscarDesdeHeader(); } });
+});
+
+// ── Funciones de búsqueda ──────────────────────────────────────────────────
+function buscarChip(t) {
+  document.getElementById('input-hero').value = t;
+  buscarDesdeHero();
+}
+
+function buscarDesdeHero() {
+  const q = document.getElementById('input-hero').value.trim();
+  if (q) ejecutarBusqueda(q);
+}
+
+function buscarDesdeHeader() {
+  const q = document.getElementById('input-header').value.trim();
+  if (q) ejecutarBusqueda(q);
+}
+
+function ejecutarBusqueda(q) {
+  ultimaBusqueda = q;
+  // Sincronizar inputs
+  document.getElementById('input-hero').value = q;
+  document.getElementById('input-header').value = q;
+  // Ocultar hero, mostrar header search
+  ocultarHero();
+  mostrarCargando();
+  fetch(`/api/buscar?q=${encodeURIComponent(q)}&limite=60`)
+    .then(r => r.json())
+    .then(renderResultados)
+    .catch(() => mostrarError());
+}
+
+function volverInicio(e) {
+  e.preventDefault();
+  mostrarHero();
+  cargarInicio();
+}
+
+// ── Hero / Header ──────────────────────────────────────────────────────────
+function ocultarHero() {
+  document.getElementById('hero').style.display = 'none';
+  document.getElementById('header-search').style.display = 'flex';
+  estadoActual = 'resultados';
+}
+
+function mostrarHero() {
+  document.getElementById('hero').style.display = 'block';
+  document.getElementById('header-search').style.display = 'none';
+  document.getElementById('sidebar').classList.remove('visible');
+  estadoActual = 'inicio';
+}
+
+// ── Pantalla de inicio ─────────────────────────────────────────────────────
+function cargarInicio() {
+  const cont = document.getElementById('contenido');
+  cont.innerHTML = `<div class="estado"><div class="spinner"></div><p>Cargando ofertas...</p></div>`;
+
+  fetch('/api/stats').then(r => r.json()).then(stats => {
+    const cats = [
+      { id: 'neveras',              icon: '🧊', nombre: 'Neveras' },
+      { id: 'televisores',          icon: '📺', nombre: 'Televisores' },
+      { id: 'lavadoras',            icon: '🫧', nombre: 'Lavadoras' },
+      { id: 'aires acondicionados', icon: '❄️', nombre: 'Aires A/C' },
+      { id: 'microondas',           icon: '📡', nombre: 'Microondas' },
+      { id: 'estufas',              icon: '🔥', nombre: 'Estufas' },
+      { id: 'lavaplatos',           icon: '🍽️', nombre: 'Lavaplatos' },
+      { id: 'secadoras',            icon: '💨', nombre: 'Secadoras' },
+    ];
+
+    let html = `<div class="seccion-titulo"><span class="icono">🗂️</span> Categorías</div>
+    <div class="cats-grid">`;
+    for (const c of cats) {
+      const n = stats.por_categoria?.[c.id] || 0;
+      html += `<button class="cat-btn" onclick="ejecutarBusqueda('${c.id}')">
+        <div class="cat-icon">${c.icon}</div>
+        <div class="cat-name">${c.nombre}</div>
+        ${n ? `<div class="cat-count">${n.toLocaleString('es-CO')} productos</div>` : ''}
+      </button>`;
+    }
+    html += `</div><div class="seccion-titulo"><span class="icono">🔥</span> Mejores ofertas del momento</div>
+    <div id="destacados-grid"><div class="estado"><div class="spinner"></div></div></div>`;
+    cont.innerHTML = html;
+  });
+
+  // Cargar productos destacados en paralelo
+  fetch('/api/destacados').then(r => r.json()).then(d => {
+    const grid = document.getElementById('destacados-grid');
+    if (!grid) return;
+    if (!d.productos?.length) {
+      grid.innerHTML = `<div class="estado"><p>Sin productos disponibles.</p></div>`;
+      return;
+    }
+    grid.className = 'grid';
+    grid.innerHTML = d.productos.map(p => renderCard(p)).join('');
+  });
+}
+
+// ── Render resultados ──────────────────────────────────────────────────────
+function renderResultados(data) {
+  todosLosProductos = data.productos || [];
+  tiendasDisponibles.clear();
+  todosLosProductos.forEach(p => p.tiendas.forEach(t => tiendasDisponibles.add(t.tienda)));
+
+  actualizarSidebar();
+  document.getElementById('sidebar').classList.add('visible');
+  renderGrid(todosLosProductos, data);
+}
+
+function renderGrid(productos, meta = {}) {
+  const cont = document.getElementById('contenido');
+
+  if (!productos?.length) {
+    cont.innerHTML = `<div class="estado">
+      <div class="estado-icon">😔</div>
+      <h2>Sin resultados</h2>
+      <p>Prueba con otro término. Ej: "nevera", "lavadora LG".</p>
+    </div>`;
+    return;
+  }
+
+  const conComp = productos.filter(p => p.tiendas.length > 1).length;
+  const consulta = meta.consulta_original || meta.termino || ultimaBusqueda;
+
+  let html = `<div class="resultados-bar">
+    <div class="resultados-info">
+      <strong>${productos.length}</strong> resultados para "<strong>${consulta}</strong>"
+    </div>
+    <select class="orden-select" onchange="ordenar(this.value)">
+      <option value="precio_asc">Menor precio</option>
+      <option value="precio_desc">Mayor precio</option>
+      <option value="desc_pct">Mayor descuento</option>
+      <option value="tiendas">Más tiendas</option>
+    </select>
+  </div>`;
+
+  if (meta.usa_ia && meta.interpretacion?.explicacion) {
+    html += `<div class="ia-banner">
+      <div class="ia-icon">✨</div>
+      <div>
+        <div class="ia-label">Interpretado con IA</div>
+        <div class="ia-text">${meta.resumen_ia || meta.interpretacion.explicacion}</div>
+        <span class="ia-tag">Buscando: ${meta.termino}</span>
+      </div>
+    </div>`;
+  }
+
+  if (conComp > 0) {
+    html += `<div class="comparacion-banner">
+      💡 <div><strong>${conComp} productos</strong> están en varias tiendas — el más barato aparece en verde.</div>
+    </div>`;
+  }
+
+  html += `<div class="grid">${productos.map(p => renderCard(p)).join('')}</div>`;
+  cont.innerHTML = html;
+}
+
+function renderCard(prod) {
+  const mejor = prod.tiendas[0];
+  const tieneDesc = mejor.precio_original && mejor.precio_original > mejor.precio;
+  const pct = tieneDesc ? Math.round((1 - mejor.precio / mejor.precio_original) * 100) : 0;
+  const multiTienda = prod.tiendas.length > 1;
+
+  const imgHtml = prod.imagen
+    ? `<img src="${prod.imagen}" alt="${prod.nombre}" loading="lazy" onerror="this.parentElement.innerHTML='<div class=no-img>📦</div>'">`
+    : `<div class="no-img">📦</div>`;
+
+  const precioHtml = `
+    <div class="card-precio-principal">
+      <span class="precio-actual">${fmt(mejor.precio)}</span>
+      ${tieneDesc ? `<span class="precio-tachado">${fmt(mejor.precio_original)}</span>` : ''}
+    </div>`;
+
+  const tiendasHtml = prod.tiendas.slice(0, 4).map((t, i) => {
+    const esMejor = i === 0;
+    const tieneDescT = t.precio_original && t.precio_original > t.precio;
+    const pctT = tieneDescT ? Math.round((1 - t.precio / t.precio_original) * 100) : 0;
+    const tag = t.url
+      ? `<a href="${t.url}" target="_blank" rel="noopener" class="tienda-row ${esMejor ? 'mejor' : ''}" onclick="event.stopPropagation()">`
+      : `<div class="tienda-row ${esMejor ? 'mejor' : ''}">`;
+    const close = t.url ? '</a>' : '</div>';
+    return `${tag}
+      <span class="tienda-chip">
+        ${t.tienda}
+        ${t.url ? '<span class="ir-icon">↗</span>' : ''}
+      </span>
+      <span class="tienda-precio">
+        ${fmt(t.precio)}
+        ${pctT >= 5 ? `<span class="desc-mini">-${pctT}%</span>` : ''}
+      </span>
+    ${close}`;
+  }).join('');
+
+  // Botón principal solo si hay URL y más de 4 tiendas
+  const mastiendas = prod.tiendas.length > 4
+    ? `<div style="font-size:.75rem;color:var(--gris-400);text-align:center;padding:.2rem 0">+${prod.tiendas.length - 4} tiendas más</div>`
+    : '';
+
+  const botonesHtml = mejor.url
+    ? `<a href="${mejor.url}" target="_blank" rel="noopener" class="btn-ir" onclick="event.stopPropagation()">Ver mejor precio →</a>`
+    : '';
+
+  return `<div class="card">
+    ${pct >= 10 ? `<div class="card-badge-desc">-${pct}%</div>` : ''}
+    ${multiTienda ? `<div class="card-badge-multi">${prod.tiendas.length} tiendas</div>` : ''}
+    <div class="card-img">${imgHtml}</div>
+    <div class="card-body">
+      <div class="card-nombre">${prod.nombre}</div>
+      ${precioHtml}
+      <div class="card-tiendas">${tiendasHtml}</div>
+    </div>
+    ${mastiendas ? `<div style="padding:0 .85rem .3rem">${mastiendas}</div>` : ''}
+    ${botonesHtml ? `<div class="card-footer">${botonesHtml}</div>` : ''}
+  </div>`;
+}
+
+// ── Filtros ────────────────────────────────────────────────────────────────
+function actualizarSidebar() {
+  const cont = document.getElementById('filtro-tiendas');
+  const conteos = {};
+  todosLosProductos.forEach(p => p.tiendas.forEach(t => {
+    conteos[t.tienda] = (conteos[t.tienda] || 0) + 1;
+  }));
+
+  cont.innerHTML = [...tiendasDisponibles].sort().map(t => `
+    <label class="filter-option">
+      <input type="checkbox" value="${t}" checked onchange="aplicarFiltros()">
+      ${t}
+      <span class="filter-count">${conteos[t] || 0}</span>
+    </label>`).join('');
+}
+
+function aplicarFiltros() {
+  const tiendasSeleccionadas = [...document.querySelectorAll('#filtro-tiendas input:checked')]
+    .map(el => el.value);
+  const precioMin = parseFloat(document.getElementById('precio-min').value) || 0;
+  const precioMax = parseFloat(document.getElementById('precio-max').value) || Infinity;
+  const soloDesc = document.getElementById('filtro-desc').checked;
+
+  let filtrados = todosLosProductos.filter(p => {
+    const tiendas = p.tiendas.filter(t => tiendasSeleccionadas.includes(t.tienda));
+    if (!tiendas.length) return false;
+    const minP = Math.min(...tiendas.map(t => t.precio));
+    if (minP < precioMin || minP > precioMax) return false;
+    if (soloDesc && !tiendas.some(t => t.precio_original && t.precio_original > t.precio)) return false;
+    return true;
+  });
+
+  renderGrid(filtrados, { consulta_original: ultimaBusqueda });
+}
+
+function ordenar(criterio) {
+  let arr = [...todosLosProductos];
+  if (criterio === 'precio_asc') arr.sort((a, b) => a.precio_min - b.precio_min);
+  else if (criterio === 'precio_desc') arr.sort((a, b) => b.precio_min - a.precio_min);
+  else if (criterio === 'desc_pct') arr.sort((a, b) => (b.descuento_pct || 0) - (a.descuento_pct || 0));
+  else if (criterio === 'tiendas') arr.sort((a, b) => b.tiendas.length - a.tiendas.length);
+  renderGrid(arr, { consulta_original: ultimaBusqueda });
+}
+
+// ── Helpers ────────────────────────────────────────────────────────────────
+function fmt(n) {
+  return '$' + Math.round(n).toLocaleString('es-CO');
+}
+
+function mostrarCargando() {
+  document.getElementById('contenido').innerHTML =
+    `<div class="estado"><div class="spinner"></div><p>Buscando los mejores precios...</p></div>`;
+}
+
+function mostrarError() {
+  document.getElementById('contenido').innerHTML =
+    `<div class="estado"><div class="estado-icon">⚠️</div><h2>Error al buscar</h2><p>Intenta de nuevo.</p></div>`;
+}
+</script>
+</body>
+</html>

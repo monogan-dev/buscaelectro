@@ -1,0 +1,21 @@
+# Claude Code
+.claude/
+
+# Entorno
+.env
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Logs
+*.log
+actualizaciones.log
+
+# Editor
+.vscode/
+.idea/
+
+# Sistema
+.DS_Store
+Thumbs.db
