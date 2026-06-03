@@ -930,9 +930,17 @@
   </div>
   <div style="margin-bottom:.75rem">
     <div class="filter-title" style="margin-bottom:.5rem">Precio</div>
-    <div class="precio-inputs" style="margin-bottom:.5rem">
-      <input type="number" id="precio-min-movil" placeholder="Mín $" min="0">
-      <input type="number" id="precio-max-movil" placeholder="Máx $" min="0">
+    <div style="display:flex;flex-direction:column;gap:.45rem">
+      <div style="position:relative">
+        <span style="position:absolute;left:.55rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--gris-400);pointer-events:none">Mín</span>
+        <input type="number" id="precio-min-movil" placeholder="0" min="0"
+          style="width:100%;padding:.45rem .55rem .45rem 2.1rem;border:1.5px solid var(--gris-200);border-radius:8px;font-size:.9rem;font-family:inherit;outline:none">
+      </div>
+      <div style="position:relative">
+        <span style="position:absolute;left:.55rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--gris-400);pointer-events:none">Máx</span>
+        <input type="number" id="precio-max-movil" placeholder="Sin límite" min="0"
+          style="width:100%;padding:.45rem .55rem .45rem 2.1rem;border:1.5px solid var(--gris-200);border-radius:8px;font-size:.9rem;font-family:inherit;outline:none">
+      </div>
     </div>
   </div>
   <label class="filter-option" style="margin-bottom:1rem">
@@ -964,16 +972,24 @@
     </div>
     <div class="filter-card">
       <div class="filter-title">Precio</div>
-      <div class="precio-range">
-        <div class="precio-inputs">
-          <input type="number" id="precio-min" placeholder="Mín $" min="0">
-          <input type="number" id="precio-max" placeholder="Máx $" min="0">
+      <div style="display:flex;flex-direction:column;gap:.5rem">
+        <div style="position:relative">
+          <span style="position:absolute;left:.55rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--gris-400);pointer-events:none">Mín</span>
+          <input type="number" id="precio-min" placeholder="0" min="0"
+            style="width:100%;padding:.45rem .55rem .45rem 2.1rem;border:1.5px solid var(--gris-200);border-radius:8px;font-size:.85rem;font-family:inherit;outline:none"
+            onfocus="this.style.borderColor='var(--azul)'" onblur="this.style.borderColor='var(--gris-200)'">
         </div>
-        <button class="btn-aplicar" onclick="aplicarFiltros()">Aplicar</button>
+        <div style="position:relative">
+          <span style="position:absolute;left:.55rem;top:50%;transform:translateY(-50%);font-size:.78rem;color:var(--gris-400);pointer-events:none">Máx</span>
+          <input type="number" id="precio-max" placeholder="Sin límite" min="0"
+            style="width:100%;padding:.45rem .55rem .45rem 2.1rem;border:1.5px solid var(--gris-200);border-radius:8px;font-size:.85rem;font-family:inherit;outline:none"
+            onfocus="this.style.borderColor='var(--azul)'" onblur="this.style.borderColor='var(--gris-200)'">
+        </div>
+        <button class="btn-aplicar" onclick="aplicarFiltros()">Aplicar precio</button>
       </div>
     </div>
     <div class="filter-card">
-      <div class="filter-title">Descuento</div>
+      <div class="filter-title">Ofertas</div>
       <label class="filter-option">
         <input type="checkbox" id="filtro-desc" onchange="aplicarFiltros()">
         Solo con descuento
@@ -1093,12 +1109,19 @@ document.getElementById('input-nav').addEventListener('keydown', e => {
   if (e.key === 'Enter') buscarDesdeNav();
 });
 
+// Usar addEventListener para el botón de filtros (más confiable que onclick inline)
+document.getElementById('btn-filtros').addEventListener('click', function(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  abrirDrawer();
+});
+
 // ── Drawer de filtros (móvil) ──────────────────────────────────────────────
 function abrirDrawer() {
+  if (window.innerWidth > 900) return; // Solo en móvil/tablet
   document.getElementById('drawer-overlay').classList.add('visible');
   document.getElementById('drawer-filtros').classList.add('visible');
   document.body.style.overflow = 'hidden';
-  // Sincronizar estado con sidebar desktop
   sincronizarFiltrosMovil();
 }
 
