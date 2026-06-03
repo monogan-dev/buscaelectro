@@ -94,15 +94,17 @@ def guardar_productos(productos: list[dict]):
     conn.close()
 
 
-def buscar_productos(termino: str, categoria: str = None, limite: int = 20) -> list[dict]:
+def buscar_productos(termino: str, categoria: str = None, limite: int = 20,
+                     offset: int = 0) -> list[dict]:
     """
-    Busca productos por texto usando FTS5 (búsqueda de texto completo).
+    Busca productos por texto usando FTS5.
     Retorna los resultados ordenados por precio ascendente.
     """
     conn = get_conexion()
-
-    # Escapar caracteres especiales de FTS5
-    termino_fts = termino.replace('"', '').replace("'", "")
+    termino_fts = termino.replace('"', '').replace("'", "").strip()
+    if not termino_fts:
+        conn.close()
+        return []
 
     if categoria:
         filas = conn.execute("""
@@ -110,19 +112,44 @@ def buscar_productos(termino: str, categoria: str = None, limite: int = 20) -> l
             JOIN productos_fts fts ON p.id = fts.rowid
             WHERE productos_fts MATCH ? AND p.categoria = ?
             ORDER BY p.precio ASC
-            LIMIT ?
-        """, (termino_fts, categoria, limite)).fetchall()
+            LIMIT ? OFFSET ?
+        """, (termino_fts, categoria, limite, offset)).fetchall()
     else:
         filas = conn.execute("""
             SELECT p.* FROM productos p
             JOIN productos_fts fts ON p.id = fts.rowid
             WHERE productos_fts MATCH ?
             ORDER BY p.precio ASC
-            LIMIT ?
-        """, (termino_fts, limite)).fetchall()
+            LIMIT ? OFFSET ?
+        """, (termino_fts, limite, offset)).fetchall()
 
     conn.close()
     return [dict(f) for f in filas]
+
+
+def contar_productos_busqueda(termino: str, categoria: str = None) -> int:
+    """Cuenta total de resultados para una búsqueda (para paginación)."""
+    conn = get_conexion()
+    termino_fts = termino.replace('"', '').replace("'", "").strip()
+    if not termino_fts:
+        conn.close()
+        return 0
+
+    if categoria:
+        n = conn.execute("""
+            SELECT COUNT(*) FROM productos p
+            JOIN productos_fts fts ON p.id = fts.rowid
+            WHERE productos_fts MATCH ? AND p.categoria = ?
+        """, (termino_fts, categoria)).fetchone()[0]
+    else:
+        n = conn.execute("""
+            SELECT COUNT(*) FROM productos p
+            JOIN productos_fts fts ON p.id = fts.rowid
+            WHERE productos_fts MATCH ?
+        """, (termino_fts,)).fetchone()[0]
+
+    conn.close()
+    return n
 
 
 def obtener_estadisticas() -> dict:

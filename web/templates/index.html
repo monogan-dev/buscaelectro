@@ -650,6 +650,58 @@
     .cat-btn .cat-name { font-size: .8rem; font-weight: 600; color: var(--gris-900); }
     .cat-btn .cat-count { font-size: .72rem; color: var(--gris-400); margin-top: .1rem; }
 
+    /* ══ PAGINACIÓN ══ */
+    .paginacion {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      gap: .4rem;
+      margin-top: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .pag-btn {
+      min-width: 38px;
+      height: 38px;
+      padding: 0 .7rem;
+      border: 1.5px solid var(--gris-200);
+      border-radius: 8px;
+      background: white;
+      color: var(--gris-900);
+      font-size: .88rem;
+      font-weight: 500;
+      font-family: inherit;
+      cursor: pointer;
+      transition: all .15s;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .pag-btn:hover:not(:disabled) {
+      border-color: var(--azul);
+      color: var(--azul);
+      background: var(--azul-soft);
+    }
+
+    .pag-btn.activo {
+      background: var(--azul);
+      border-color: var(--azul);
+      color: white;
+      font-weight: 700;
+    }
+
+    .pag-btn:disabled {
+      opacity: .35;
+      cursor: not-allowed;
+    }
+
+    .pag-info {
+      font-size: .82rem;
+      color: var(--gris-400);
+      padding: 0 .5rem;
+    }
+
     /* ══ RESPONSIVE ══ */
     @media (max-width: 768px) {
       #sidebar { display: none !important; }
@@ -734,10 +786,14 @@
 
 <script>
 // ── Estado global ──────────────────────────────────────────────────────────
-let estadoActual = 'inicio'; // 'inicio' | 'resultados'
-let ultimaBusqueda = '';
-let todosLosProductos = [];
+let estadoActual    = 'inicio';
+let ultimaBusqueda  = '';
+let paginaActual    = 1;
+let totalPaginas    = 1;
+let totalProductos  = 0;
+let ordenActual     = 'precio_asc';
 let tiendasDisponibles = new Set();
+let tiendasSeleccionadas = new Set();
 
 // ── Inicializar ────────────────────────────────────────────────────────────
 fetch('/api/stats').then(r => r.json()).then(d => {
@@ -770,17 +826,48 @@ function buscarDesdeHeader() {
   if (q) ejecutarBusqueda(q);
 }
 
-function ejecutarBusqueda(q) {
+function ejecutarBusqueda(q, pagina = 1) {
   ultimaBusqueda = q;
-  // Sincronizar inputs
-  document.getElementById('input-hero').value = q;
+  paginaActual   = pagina;
+  document.getElementById('input-hero').value   = q;
   document.getElementById('input-header').value = q;
-  // Ocultar hero, mostrar header search
   ocultarHero();
   mostrarCargando();
-  fetch(`/api/buscar?q=${encodeURIComponent(q)}&limite=60`)
+  _fetchBusqueda(q, pagina);
+}
+
+function _fetchBusqueda(q, pagina) {
+  const params = new URLSearchParams({
+    q,
+    pagina,
+    orden: ordenActual,
+  });
+
+  // Filtros activos
+  const precioMin = document.getElementById('precio-min')?.value;
+  const precioMax = document.getElementById('precio-max')?.value;
+  const soloDesc  = document.getElementById('filtro-desc')?.checked;
+  if (precioMin) params.set('precio_min', precioMin);
+  if (precioMax) params.set('precio_max', precioMax);
+  if (soloDesc)  params.set('solo_descuento', '1');
+  tiendasSeleccionadas.forEach(t => params.append('tienda', t));
+
+  fetch(`/api/buscar?${params}`)
     .then(r => r.json())
-    .then(renderResultados)
+    .then(data => {
+      totalPaginas   = data.paginas  || 1;
+      totalProductos = data.total    || 0;
+      paginaActual   = data.pagina   || 1;
+
+      // Actualizar tiendas disponibles solo en página 1
+      if (pagina === 1) {
+        tiendasDisponibles.clear();
+        (data.productos || []).forEach(p => p.tiendas.forEach(t => tiendasDisponibles.add(t.tienda)));
+        actualizarSidebar();
+        document.getElementById('sidebar').classList.add('visible');
+      }
+      renderResultados(data);
+    })
     .catch(() => mostrarError());
 }
 
@@ -851,49 +938,44 @@ function cargarInicio() {
 
 // ── Render resultados ──────────────────────────────────────────────────────
 function renderResultados(data) {
-  todosLosProductos = data.productos || [];
-  tiendasDisponibles.clear();
-  todosLosProductos.forEach(p => p.tiendas.forEach(t => tiendasDisponibles.add(t.tienda)));
+  const productos = data.productos || [];
+  const conComp   = productos.filter(p => p.tiendas.length > 1).length;
+  const consulta  = data.consulta_original || data.termino || ultimaBusqueda;
+  const cont      = document.getElementById('contenido');
 
-  actualizarSidebar();
-  document.getElementById('sidebar').classList.add('visible');
-  renderGrid(todosLosProductos, data);
-}
-
-function renderGrid(productos, meta = {}) {
-  const cont = document.getElementById('contenido');
-
-  if (!productos?.length) {
+  if (!productos.length && paginaActual === 1) {
     cont.innerHTML = `<div class="estado">
       <div class="estado-icon">😔</div>
-      <h2>Sin resultados</h2>
+      <h2>Sin resultados para "${consulta}"</h2>
       <p>Prueba con otro término. Ej: "nevera", "lavadora LG".</p>
     </div>`;
     return;
   }
 
-  const conComp = productos.filter(p => p.tiendas.length > 1).length;
-  const consulta = meta.consulta_original || meta.termino || ultimaBusqueda;
+  // Mostrar desde qué resultado hasta cuál
+  const desde = (paginaActual - 1) * 20 + 1;
+  const hasta = Math.min(paginaActual * 20, totalProductos);
 
   let html = `<div class="resultados-bar">
     <div class="resultados-info">
-      <strong>${productos.length}</strong> resultados para "<strong>${consulta}</strong>"
+      Mostrando <strong>${desde}–${hasta}</strong> de <strong>${totalProductos}</strong>
+      resultados para "<strong>${consulta}</strong>"
     </div>
-    <select class="orden-select" onchange="ordenar(this.value)">
-      <option value="precio_asc">Menor precio</option>
-      <option value="precio_desc">Mayor precio</option>
-      <option value="desc_pct">Mayor descuento</option>
-      <option value="tiendas">Más tiendas</option>
+    <select class="orden-select" onchange="cambiarOrden(this.value)">
+      <option value="precio_asc"  ${ordenActual==='precio_asc'  ? 'selected':''}>Menor precio</option>
+      <option value="precio_desc" ${ordenActual==='precio_desc' ? 'selected':''}>Mayor precio</option>
+      <option value="desc_pct"    ${ordenActual==='desc_pct'    ? 'selected':''}>Mayor descuento</option>
+      <option value="tiendas"     ${ordenActual==='tiendas'     ? 'selected':''}>Más tiendas</option>
     </select>
   </div>`;
 
-  if (meta.usa_ia && meta.interpretacion?.explicacion) {
+  if (data.usa_ia && data.interpretacion?.explicacion) {
     html += `<div class="ia-banner">
       <div class="ia-icon">✨</div>
       <div>
         <div class="ia-label">Interpretado con IA</div>
-        <div class="ia-text">${meta.resumen_ia || meta.interpretacion.explicacion}</div>
-        <span class="ia-tag">Buscando: ${meta.termino}</span>
+        <div class="ia-text">${data.resumen_ia || data.interpretacion.explicacion}</div>
+        <span class="ia-tag">Buscando: ${data.termino}</span>
       </div>
     </div>`;
   }
@@ -905,6 +987,7 @@ function renderGrid(productos, meta = {}) {
   }
 
   html += `<div class="grid">${productos.map(p => renderCard(p)).join('')}</div>`;
+  html += renderPaginacion(data.pagina, data.paginas, data.total);
   cont.innerHTML = html;
 }
 
@@ -967,48 +1050,100 @@ function renderCard(prod) {
   </div>`;
 }
 
+// ── Paginación ─────────────────────────────────────────────────────────────
+function renderPaginacion(pagina, paginas, total) {
+  if (!paginas || paginas <= 1) return '';
+
+  const desde = (pagina - 1) * 20 + 1;
+  const hasta = Math.min(pagina * 20, total);
+
+  let html = `<div style="text-align:center;margin-top:.5rem 0;font-size:.82rem;color:var(--gris-400)">
+    Página ${pagina} de ${paginas} · ${total} productos
+  </div>
+  <div class="paginacion">`;
+
+  // Botón anterior
+  html += `<button class="pag-btn" onclick="irPagina(${pagina - 1})"
+    ${pagina === 1 ? 'disabled' : ''}>&#8592; Anterior</button>`;
+
+  // Páginas numeradas
+  const rango = paginasARender(pagina, paginas);
+  let anteriorFueEllipsis = false;
+  for (const p of rango) {
+    if (p === '...') {
+      if (!anteriorFueEllipsis) html += `<span class="pag-info">…</span>`;
+      anteriorFueEllipsis = true;
+    } else {
+      anteriorFueEllipsis = false;
+      html += `<button class="pag-btn ${p === pagina ? 'activo' : ''}"
+        onclick="irPagina(${p})">${p}</button>`;
+    }
+  }
+
+  // Botón siguiente
+  html += `<button class="pag-btn" onclick="irPagina(${pagina + 1})"
+    ${pagina === paginas ? 'disabled' : ''}>Siguiente &#8594;</button>`;
+
+  html += `</div>`;
+  return html;
+}
+
+function paginasARender(actual, total) {
+  if (total <= 7) return Array.from({length: total}, (_, i) => i + 1);
+  const pages = new Set([1, total, actual]);
+  for (let d = 1; d <= 2; d++) {
+    if (actual - d >= 1)     pages.add(actual - d);
+    if (actual + d <= total) pages.add(actual + d);
+  }
+  const sorted = [...pages].sort((a, b) => a - b);
+  const result = [];
+  let prev = 0;
+  for (const p of sorted) {
+    if (p - prev > 1) result.push('...');
+    result.push(p);
+    prev = p;
+  }
+  return result;
+}
+
+function irPagina(p) {
+  if (p < 1 || p > totalPaginas || p === paginaActual) return;
+  paginaActual = p;
+  mostrarCargando();
+  _fetchBusqueda(ultimaBusqueda, p);
+  // Scroll suave al inicio del contenido
+  document.getElementById('contenido').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+
 // ── Filtros ────────────────────────────────────────────────────────────────
 function actualizarSidebar() {
   const cont = document.getElementById('filtro-tiendas');
-  const conteos = {};
-  todosLosProductos.forEach(p => p.tiendas.forEach(t => {
-    conteos[t.tienda] = (conteos[t.tienda] || 0) + 1;
-  }));
-
-  cont.innerHTML = [...tiendasDisponibles].sort().map(t => `
-    <label class="filter-option">
-      <input type="checkbox" value="${t}" checked onchange="aplicarFiltros()">
+  cont.innerHTML = [...tiendasDisponibles].sort().map(t => {
+    const checked = tiendasSeleccionadas.size === 0 || tiendasSeleccionadas.has(t);
+    return `<label class="filter-option">
+      <input type="checkbox" value="${t}" ${checked ? 'checked' : ''} onchange="toggleTienda(this)">
       ${t}
-      <span class="filter-count">${conteos[t] || 0}</span>
-    </label>`).join('');
+    </label>`;
+  }).join('');
+}
+
+function toggleTienda(el) {
+  if (el.checked) tiendasSeleccionadas.delete(el.value);
+  else            tiendasSeleccionadas.add(el.value);  // guardamos las EXCLUIDAS
+  aplicarFiltros();
 }
 
 function aplicarFiltros() {
-  const tiendasSeleccionadas = [...document.querySelectorAll('#filtro-tiendas input:checked')]
-    .map(el => el.value);
-  const precioMin = parseFloat(document.getElementById('precio-min').value) || 0;
-  const precioMax = parseFloat(document.getElementById('precio-max').value) || Infinity;
-  const soloDesc = document.getElementById('filtro-desc').checked;
-
-  let filtrados = todosLosProductos.filter(p => {
-    const tiendas = p.tiendas.filter(t => tiendasSeleccionadas.includes(t.tienda));
-    if (!tiendas.length) return false;
-    const minP = Math.min(...tiendas.map(t => t.precio));
-    if (minP < precioMin || minP > precioMax) return false;
-    if (soloDesc && !tiendas.some(t => t.precio_original && t.precio_original > t.precio)) return false;
-    return true;
-  });
-
-  renderGrid(filtrados, { consulta_original: ultimaBusqueda });
+  paginaActual = 1;
+  mostrarCargando();
+  _fetchBusqueda(ultimaBusqueda, 1);
 }
 
-function ordenar(criterio) {
-  let arr = [...todosLosProductos];
-  if (criterio === 'precio_asc') arr.sort((a, b) => a.precio_min - b.precio_min);
-  else if (criterio === 'precio_desc') arr.sort((a, b) => b.precio_min - a.precio_min);
-  else if (criterio === 'desc_pct') arr.sort((a, b) => (b.descuento_pct || 0) - (a.descuento_pct || 0));
-  else if (criterio === 'tiendas') arr.sort((a, b) => b.tiendas.length - a.tiendas.length);
-  renderGrid(arr, { consulta_original: ultimaBusqueda });
+function cambiarOrden(criterio) {
+  ordenActual  = criterio;
+  paginaActual = 1;
+  mostrarCargando();
+  _fetchBusqueda(ultimaBusqueda, 1);
 }
 
 // ── Helpers ────────────────────────────────────────────────────────────────

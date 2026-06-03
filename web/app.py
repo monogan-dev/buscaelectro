@@ -26,7 +26,7 @@ DB_DIR = os.environ.get("DB_DIR", str(Path(__file__).parent.parent))
 os.environ.setdefault("DB_PATH", str(Path(DB_DIR) / "productos.db"))
 
 sys.path.insert(0, str(Path(__file__).parent.parent / "scraper"))
-from db import buscar_productos, obtener_estadisticas, get_conexion
+from db import buscar_productos, contar_productos_busqueda, obtener_estadisticas, get_conexion
 from ia import interpretar_consulta, generar_resumen
 
 app = Flask(__name__)
@@ -81,13 +81,16 @@ def api_destacados():
 @app.route("/api/buscar")
 def api_buscar():
     consulta_original = request.args.get("q", "").strip()
-    limite = int(request.args.get("limite", 60))
-    precio_min = request.args.get("precio_min", type=float)
-    precio_max = request.args.get("precio_max", type=float)
+    pagina        = max(1, int(request.args.get("pagina", 1)))
+    por_pagina    = 20
+    precio_min    = request.args.get("precio_min", type=float)
+    precio_max    = request.args.get("precio_max", type=float)
     tiendas_filtro = request.args.getlist("tienda")
+    solo_descuento = request.args.get("solo_descuento") == "1"
+    orden         = request.args.get("orden", "precio_asc")
 
     if not consulta_original:
-        return jsonify({"productos": [], "total": 0})
+        return jsonify({"productos": [], "total": 0, "paginas": 0, "pagina": 1})
 
     tiene_api_key = bool(os.environ.get("ANTHROPIC_API_KEY"))
     usa_ia = _es_lenguaje_natural(consulta_original) and tiene_api_key
@@ -96,15 +99,17 @@ def api_buscar():
 
     if usa_ia:
         interpretacion = interpretar_consulta(consulta_original)
-        termino = interpretacion.get("termino", consulta_original)
+        termino   = interpretacion.get("termino", consulta_original)
         categoria = interpretacion.get("categoria")
     else:
-        termino = consulta_original
+        termino   = consulta_original
         categoria = request.args.get("categoria") or None
 
-    productos_raw = buscar_productos(termino, categoria=categoria, limite=limite)
+    # Traer TODOS los resultados de la BD (FTS5 es muy rápido ~20ms)
+    # La paginación se hace en Python después de agrupar por nombre
+    productos_raw = buscar_productos(termino, categoria=categoria, limite=5000)
 
-    # Aplicar filtros de precio y tienda
+    # Filtros en memoria (sobre los resultados ya traídos)
     if precio_min is not None:
         productos_raw = [p for p in productos_raw if p["precio"] >= precio_min]
     if precio_max is not None:
@@ -114,20 +119,40 @@ def api_buscar():
 
     grupos = _agrupar_por_nombre(productos_raw)
 
-    if usa_ia and grupos and not interpretacion.get("error"):
-        resumen_ia = generar_resumen(consulta_original, grupos)
+    if solo_descuento:
+        grupos = [g for g in grupos if g.get("descuento_pct", 0) > 0]
+
+    # Ordenar
+    if orden == "precio_desc":
+        grupos.sort(key=lambda x: x["precio_min"], reverse=True)
+    elif orden == "desc_pct":
+        grupos.sort(key=lambda x: x.get("descuento_pct", 0), reverse=True)
+    elif orden == "tiendas":
+        grupos.sort(key=lambda x: len(x["tiendas"]), reverse=True)
+
+    total         = len(grupos)
+    total_paginas = max(1, -(-total // por_pagina))
+    pagina        = min(pagina, total_paginas)
+    inicio        = (pagina - 1) * por_pagina
+    pagina_actual = grupos[inicio: inicio + por_pagina]
+
+    if usa_ia and pagina == 1 and pagina_actual and not (interpretacion or {}).get("error"):
+        resumen_ia = generar_resumen(consulta_original, pagina_actual)
 
     respuesta = {
-        "productos": grupos,
-        "total": len(grupos),
-        "termino": termino,
+        "productos":  pagina_actual,
+        "total":      total,
+        "pagina":     pagina,
+        "paginas":    total_paginas,
+        "por_pagina": por_pagina,
+        "termino":    termino,
         "consulta_original": consulta_original,
-        "usa_ia": usa_ia,
+        "usa_ia":     usa_ia,
     }
     if interpretacion:
         respuesta["interpretacion"] = {
             "explicacion": interpretacion.get("explicacion"),
-            "categoria": interpretacion.get("categoria"),
+            "categoria":   interpretacion.get("categoria"),
         }
     if resumen_ia:
         respuesta["resumen_ia"] = resumen_ia
