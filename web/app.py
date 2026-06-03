@@ -139,6 +139,9 @@ def api_buscar():
     if usa_ia and pagina == 1 and pagina_actual and not (interpretacion or {}).get("error"):
         resumen_ia = generar_resumen(consulta_original, pagina_actual)
 
+    # Tiendas únicas en todos los resultados (para el sidebar)
+    tiendas_set = sorted({t["tienda"] for g in grupos for t in g["tiendas"]})
+
     respuesta = {
         "productos":  pagina_actual,
         "total":      total,
@@ -148,6 +151,7 @@ def api_buscar():
         "termino":    termino,
         "consulta_original": consulta_original,
         "usa_ia":     usa_ia,
+        "tiendas_disponibles": tiendas_set,
     }
     if interpretacion:
         respuesta["interpretacion"] = {

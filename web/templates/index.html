@@ -702,16 +702,183 @@
       padding: 0 .5rem;
     }
 
-    /* ══ RESPONSIVE ══ */
-    @media (max-width: 768px) {
-      #sidebar { display: none !important; }
-      .grid { grid-template-columns: repeat(2, 1fr); }
-      .header-search { display: none; }
-      #hero { padding: 2rem 1rem 2.5rem; }
+    /* ══ FILTROS MÓVIL ══ */
+    .btn-filtros-movil {
+      display: none;
+      align-items: center;
+      gap: .4rem;
+      background: white;
+      border: 1.5px solid var(--gris-200);
+      border-radius: 8px;
+      padding: .45rem .8rem;
+      font-size: .85rem;
+      font-weight: 600;
+      font-family: inherit;
+      cursor: pointer;
+      color: var(--gris-900);
     }
 
-    @media (max-width: 420px) {
+    .drawer-overlay {
+      display: none;
+      position: fixed;
+      inset: 0;
+      background: rgba(0,0,0,.45);
+      z-index: 300;
+    }
+
+    .drawer-overlay.visible { display: block; }
+
+    .drawer {
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-radius: 16px 16px 0 0;
+      padding: 1.2rem 1.2rem 2rem;
+      z-index: 301;
+      transform: translateY(100%);
+      transition: transform .25s ease;
+      max-height: 80vh;
+      overflow-y: auto;
+    }
+
+    .drawer.visible { transform: translateY(0); }
+
+    .drawer-handle {
+      width: 36px;
+      height: 4px;
+      background: var(--gris-200);
+      border-radius: 99px;
+      margin: 0 auto .8rem;
+    }
+
+    .drawer-titulo {
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 1rem;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .drawer-cerrar {
+      background: var(--gris-100);
+      border: none;
+      border-radius: 999px;
+      width: 28px;
+      height: 28px;
+      font-size: 1rem;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    /* ══ NAV INFERIOR MÓVIL — solo en pantallas pequeñas ══ */
+    .nav-bottom {
+      display: none;
+      position: fixed;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      background: white;
+      border-top: 1px solid var(--gris-200);
+      padding: .5rem 1rem env(safe-area-inset-bottom, .5rem);
+      z-index: 200;
+      gap: .5rem;
+    }
+
+    @media (max-width: 768px) {
+      .nav-bottom.visible { display: flex; }
+    }
+
+    .nav-search-bar {
+      flex: 1;
+      display: flex;
+      background: var(--gris-100);
+      border: 1.5px solid var(--gris-200);
+      border-radius: 999px;
+      overflow: hidden;
+    }
+
+    .nav-search-bar input {
+      flex: 1;
+      padding: .5rem .9rem;
+      background: transparent;
+      border: none;
+      outline: none;
+      font-size: .9rem;
+      font-family: inherit;
+    }
+
+    .nav-search-bar button {
+      background: var(--azul);
+      color: white;
+      border: none;
+      padding: 0 .9rem;
+      border-radius: 0 999px 999px 0;
+      cursor: pointer;
+      font-size: .9rem;
+    }
+
+    /* ══ RESPONSIVE TABLET ══ */
+    @media (max-width: 900px) {
+      #sidebar { display: none !important; }
+      .btn-filtros-movil { display: flex; }
+    }
+
+    /* ══ RESPONSIVE MÓVIL ══ */
+    @media (max-width: 768px) {
+      /* Header */
+      .header-inner { padding: 0 1rem; gap: .75rem; }
+      .header-search { display: none !important; }
+      .badge-tiendas { font-size: .7rem; padding: .25rem .55rem; }
+
+      /* Hero */
+      #hero { padding: 1.75rem 1rem 2rem; }
+      .hero-titulo { font-size: 1.5rem; }
+      .hero-sub { font-size: .9rem; margin-bottom: 1.25rem; }
+      .hero-search-wrap input { padding: .7rem 1rem; font-size: .9rem; }
+      .hero-search-wrap button { padding: 0 1rem; font-size: .9rem; }
+      .hero-chips { gap: .35rem; }
+      .hero-chip { font-size: .78rem; padding: .25rem .65rem; }
+
+      /* Layout */
+      .page-wrap { padding: 1rem; gap: 0; }
+
+      /* Categorías */
+      .cats-grid { grid-template-columns: repeat(4, 1fr); gap: .5rem; }
+      .cat-btn { padding: .75rem .5rem; }
+      .cat-btn .cat-icon { font-size: 1.3rem; }
+      .cat-btn .cat-name { font-size: .72rem; }
+      .cat-btn .cat-count { display: none; }
+
+      /* Grid resultados */
+      .grid { grid-template-columns: repeat(2, 1fr); gap: .65rem; }
+      .card-img { height: 140px; }
+      .card-body { padding: .65rem; gap: .4rem; }
+      .card-nombre { font-size: .78rem; }
+      .precio-actual { font-size: 1rem; }
+      .card-footer { padding: .55rem .65rem; }
+      .btn-ir { font-size: .75rem; padding: .4rem; }
+
+      /* Paginación */
+      .paginacion { gap: .25rem; margin-top: 1.25rem; }
+      .pag-btn { min-width: 34px; height: 34px; font-size: .82rem; padding: 0 .5rem; }
+
+      /* Resultados bar */
+      .resultados-bar { flex-direction: column; align-items: flex-start; gap: .5rem; }
+
+      /* Nav inferior */
+      .nav-bottom.visible { display: flex; }
+      /* Espacio para nav inferior */
+      body { padding-bottom: 70px; }
+    }
+
+    @media (max-width: 400px) {
       .grid { grid-template-columns: 1fr; }
+      .cats-grid { grid-template-columns: repeat(4, 1fr); }
     }
   </style>
 </head>
@@ -736,23 +903,60 @@
   <h1 class="hero-titulo">Compara precios en 9 tiendas<br>de Colombia al instante</h1>
   <p class="hero-sub">Encuentra el electrodoméstico más barato entre Alkosto, Éxito, Homecenter y más</p>
   <div class="hero-search-wrap">
-    <input type="text" id="input-hero" placeholder="Ej: nevera samsung no frost, lavadora LG 15 kg..." autocomplete="off">
+    <input type="text" id="input-hero" placeholder="Ej: nevera samsung, lavadora LG 15 kg..." autocomplete="off">
     <button onclick="buscarDesdeHero()">Buscar</button>
   </div>
   <div class="hero-chips">
     <span class="hero-chip" onclick="buscarChip('nevera no frost')">Nevera No Frost</span>
     <span class="hero-chip" onclick="buscarChip('lavadora frontal')">Lavadora frontal</span>
     <span class="hero-chip" onclick="buscarChip('televisor 55')">TV 55"</span>
-    <span class="hero-chip" onclick="buscarChip('aire acondicionado')">Aire acondicionado</span>
+    <span class="hero-chip" onclick="buscarChip('aire acondicionado')">Aire A/C</span>
     <span class="hero-chip" onclick="buscarChip('microondas samsung')">Microondas</span>
     <span class="hero-chip" onclick="buscarChip('estufa gas')">Estufa gas</span>
   </div>
 </div>
 
+<!-- ══ DRAWER FILTROS (móvil) ══ -->
+<div class="drawer-overlay" id="drawer-overlay" onclick="cerrarDrawer()"></div>
+<div class="drawer" id="drawer-filtros">
+  <div class="drawer-handle"></div>
+  <div class="drawer-titulo">
+    Filtros
+    <button class="drawer-cerrar" onclick="cerrarDrawer()">✕</button>
+  </div>
+  <div style="margin-bottom:.75rem">
+    <div class="filter-title" style="margin-bottom:.5rem">Tienda</div>
+    <div id="filtro-tiendas-movil"></div>
+  </div>
+  <div style="margin-bottom:.75rem">
+    <div class="filter-title" style="margin-bottom:.5rem">Precio</div>
+    <div class="precio-inputs" style="margin-bottom:.5rem">
+      <input type="number" id="precio-min-movil" placeholder="Mín $" min="0">
+      <input type="number" id="precio-max-movil" placeholder="Máx $" min="0">
+    </div>
+  </div>
+  <label class="filter-option" style="margin-bottom:1rem">
+    <input type="checkbox" id="filtro-desc-movil">
+    Solo con descuento
+  </label>
+  <button class="btn-aplicar" onclick="aplicarFiltrosMovil()">Aplicar filtros</button>
+</div>
+
+<!-- ══ BARRA BÚSQUEDA INFERIOR (móvil) ══ -->
+<div class="nav-bottom" id="nav-bottom">
+  <div class="nav-search-bar">
+    <input type="text" id="input-nav" placeholder="Buscar..." autocomplete="off">
+    <button onclick="buscarDesdeNav()">&#128269;</button>
+  </div>
+  <button class="btn-filtros-movil" id="btn-filtros" onclick="abrirDrawer()" style="display:none">
+    &#9776; Filtros
+  </button>
+</div>
+
 <!-- ══ LAYOUT ══ -->
 <div class="page-wrap">
 
-  <!-- Sidebar filtros -->
+  <!-- Sidebar filtros (desktop) -->
   <aside id="sidebar">
     <div class="filter-card">
       <div class="filter-title">Tienda</div>
@@ -831,6 +1035,7 @@ function ejecutarBusqueda(q, pagina = 1) {
   paginaActual   = pagina;
   document.getElementById('input-hero').value   = q;
   document.getElementById('input-header').value = q;
+  document.getElementById('input-nav').value    = q;
   ocultarHero();
   mostrarCargando();
   _fetchBusqueda(q, pagina);
@@ -859,12 +1064,13 @@ function _fetchBusqueda(q, pagina) {
       totalProductos = data.total    || 0;
       paginaActual   = data.pagina   || 1;
 
-      // Actualizar tiendas disponibles solo en página 1
-      if (pagina === 1) {
+      // Actualizar tiendas disponibles en página 1 (vienen del servidor)
+      if (pagina === 1 && data.tiendas_disponibles?.length) {
         tiendasDisponibles.clear();
-        (data.productos || []).forEach(p => p.tiendas.forEach(t => tiendasDisponibles.add(t.tienda)));
+        data.tiendas_disponibles.forEach(t => tiendasDisponibles.add(t));
         actualizarSidebar();
         document.getElementById('sidebar').classList.add('visible');
+        document.getElementById('btn-filtros').style.display = 'flex';
       }
       renderResultados(data);
     })
@@ -877,10 +1083,68 @@ function volverInicio(e) {
   cargarInicio();
 }
 
+// ── Búsqueda desde barra inferior móvil ────────────────────────────────────
+function buscarDesdeNav() {
+  const q = document.getElementById('input-nav').value.trim();
+  if (q) ejecutarBusqueda(q);
+}
+
+document.getElementById('input-nav').addEventListener('keydown', e => {
+  if (e.key === 'Enter') buscarDesdeNav();
+});
+
+// ── Drawer de filtros (móvil) ──────────────────────────────────────────────
+function abrirDrawer() {
+  document.getElementById('drawer-overlay').classList.add('visible');
+  document.getElementById('drawer-filtros').classList.add('visible');
+  document.body.style.overflow = 'hidden';
+  // Sincronizar estado con sidebar desktop
+  sincronizarFiltrosMovil();
+}
+
+function cerrarDrawer() {
+  document.getElementById('drawer-overlay').classList.remove('visible');
+  document.getElementById('drawer-filtros').classList.remove('visible');
+  document.body.style.overflow = '';
+}
+
+function sincronizarFiltrosMovil() {
+  // Copiar tiendas del sidebar al drawer
+  const contDesktop = document.getElementById('filtro-tiendas');
+  const contMovil   = document.getElementById('filtro-tiendas-movil');
+  if (contDesktop && contMovil) contMovil.innerHTML = contDesktop.innerHTML;
+  // Sincronizar precio
+  const pmin = document.getElementById('precio-min')?.value;
+  const pmax = document.getElementById('precio-max')?.value;
+  if (pmin) document.getElementById('precio-min-movil').value = pmin;
+  if (pmax) document.getElementById('precio-max-movil').value = pmax;
+  // Sincronizar descuento
+  const desc = document.getElementById('filtro-desc')?.checked;
+  if (desc) document.getElementById('filtro-desc-movil').checked = desc;
+}
+
+function aplicarFiltrosMovil() {
+  // Sincronizar valores del drawer al sidebar
+  const pmin = document.getElementById('precio-min-movil').value;
+  const pmax = document.getElementById('precio-max-movil').value;
+  const desc = document.getElementById('filtro-desc-movil').checked;
+  if (document.getElementById('precio-min')) document.getElementById('precio-min').value = pmin;
+  if (document.getElementById('precio-max')) document.getElementById('precio-max').value = pmax;
+  if (document.getElementById('filtro-desc')) document.getElementById('filtro-desc').checked = desc;
+  // Leer tiendas excluidas del drawer
+  tiendasSeleccionadas.clear();
+  document.querySelectorAll('#filtro-tiendas-movil input:not(:checked)')
+    .forEach(el => tiendasSeleccionadas.add(el.value));
+  cerrarDrawer();
+  aplicarFiltros();
+}
+
 // ── Hero / Header ──────────────────────────────────────────────────────────
 function ocultarHero() {
   document.getElementById('hero').style.display = 'none';
   document.getElementById('header-search').style.display = 'flex';
+  // Mostrar barra inferior en móvil
+  document.getElementById('nav-bottom').classList.add('visible');
   estadoActual = 'resultados';
 }
 
@@ -888,6 +1152,8 @@ function mostrarHero() {
   document.getElementById('hero').style.display = 'block';
   document.getElementById('header-search').style.display = 'none';
   document.getElementById('sidebar').classList.remove('visible');
+  document.getElementById('nav-bottom').classList.remove('visible');
+  document.getElementById('btn-filtros').style.display = 'none';
   estadoActual = 'inicio';
 }
 
